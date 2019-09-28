@@ -5,7 +5,9 @@
       "dom",
       "es6"
     ],
-    "module": "commonjs",
+    "module": "esnext",
+    "esModuleInterop": true,
+    "sourceMap": true,
     "declaration": true,
     "outDir": "./lib",
     "skipLibCheck": true,
