@@ -1,5 +1,5 @@
-import "./rxState"
-import {RxRootState} from "./rxState"
+import "../src/rxState"
+import {RxRootState} from "../src/rxState"
 
 const initialState = {
   value: 1,

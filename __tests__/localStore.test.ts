@@ -1,4 +1,4 @@
-import {createLocalStore} from "./localStore"
+import {createLocalStore} from "../src/localStore"
 
 function createStore() {
   return createLocalStore({value: 1}, ctx => ({

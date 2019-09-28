@@ -1,11 +1,11 @@
-import {getMethodsNames} from "./utils"
+import {getMethodsNames} from "../src/utils/utils"
 
 class FooBar {
-  static staticFoo() {}
-  fooVar = 123
+  public static staticFoo() {}
+  public fooVar = 123
   constructor() {}
-  foo() {}
-  bar() {}
+  public foo() {}
+  public bar() {}
 }
 
 it("rxRootState", () => {

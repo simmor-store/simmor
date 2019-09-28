@@ -51,7 +51,10 @@ export function Reducer(options = defaultReducerOptions) {
 }
 
 // tslint:disable-next-line:ban-types
-export function wrapReducerActions(target: Function, options = defaultReducerOptions) {
+export function wrapReducerActions(
+  target: Function,
+  options = defaultReducerOptions,
+) {
   const targetAny = target as any
   if (targetAny[actionsAreWrapped]) {
     return

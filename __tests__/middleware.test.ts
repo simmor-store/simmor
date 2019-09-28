@@ -1,5 +1,5 @@
-import {Middleware} from "./middleware"
-import {ReducerStore} from "./reducerStore"
+import {Middleware} from "../src/middleware"
+import {ReducerStore} from "../src/reducerStore"
 
 const log: string[] = []
 

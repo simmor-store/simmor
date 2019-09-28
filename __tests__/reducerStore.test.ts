@@ -1,4 +1,4 @@
-import {ReducerStore} from "./reducerStore"
+import {ReducerStore} from "../src/reducerStore"
 
 export class TestStore extends ReducerStore<{value: number}> {
   constructor() {

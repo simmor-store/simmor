@@ -1,9 +1,7 @@
 import {globalConfig} from "./globalConfig"
 import {Action, ReducerOptions} from "./simmorReducer"
 
-export type Middleware = (
-  next: (data: Action) => any,
-) => (data: Action) => void
+export type Middleware = (next: (data: Action) => any) => (data: Action) => void
 
 export function combineMiddlewares(middlewares: Middleware[]): Middleware {
   if (middlewares.length == 0) {

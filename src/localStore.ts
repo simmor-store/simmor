@@ -12,7 +12,7 @@ export type LocalReducer<TState, TActions extends Actions> = (
 const wrapActions = <TState, TActions extends Actions>(
   context: SimmorReducerContext<TState>,
   actions: TActions,
-  options = defaultReducerOptions
+  options = defaultReducerOptions,
 ) => {
   const reducer = {} as any
   const keys = Object.keys(actions)
@@ -30,8 +30,8 @@ const wrapActions = <TState, TActions extends Actions>(
 export function createLocalStore<TState, TActions extends Actions>(
   initialState: InitialState<TState>,
   reducer: LocalReducer<TState, TActions>,
-  options = defaultReducerOptions
-): {rxState: RxState<TState>, dispatch: TActions} {
+  options = defaultReducerOptions,
+): {rxState: RxState<TState>; dispatch: TActions} {
   const rxState = createRxState(initialState)
   const context = new SimmorReducerContext(rxState)
   const actions = reducer(context)
