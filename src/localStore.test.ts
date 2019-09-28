@@ -13,14 +13,14 @@ function createStore() {
 }
 
 it("localStore", () => {
-  const {store, reducer} = createStore()
-  expect(store.state.value).toEqual(1)
-  reducer.increase()
-  expect(store.state.value).toEqual(2)
+  const {rxState, dispatch} = createStore()
+  expect(rxState.state.value).toEqual(1)
+  dispatch.increase()
+  expect(rxState.state.value).toEqual(2)
 })
 
 it("localStore nested action", () => {
-  const {store, reducer} = createStore()
-  reducer.doubleIncrease()
-  expect(store.state.value).toEqual(3)
+  const {rxState, dispatch} = createStore()
+  dispatch.doubleIncrease()
+  expect(rxState.state.value).toEqual(3)
 })

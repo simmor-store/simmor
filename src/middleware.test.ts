@@ -4,7 +4,7 @@ import {ReducerStore} from "./reducerStore"
 const log: string[] = []
 
 const testMiddleware: (name: string) => Middleware = name => next => data => {
-  log.push(data.actionName)
+  log.push(data.methodName)
   log.push(name + "_1")
   const r = next(data)
   log.push(name + "_2")
@@ -26,7 +26,7 @@ beforeEach(() => {
 
 it("middleware constructor", () => {
   const store = new TestStore()
-  expect(log.join(" ")).toEqual("CREATED 1_1 CREATED 2_1 2_2 1_2")
+  expect(log.join(" ")).toEqual("constructor 1_1 constructor 2_1 2_2 1_2")
 })
 
 it("middleware", () => {

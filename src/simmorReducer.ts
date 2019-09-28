@@ -1,26 +1,25 @@
 import {Draft} from "immer"
-import {globalConfig} from "./globalConfig"
-import {combineMiddleware, Middleware} from "./middleware"
+import {combineMiddlewaresWithGlobals, Middleware} from "./middleware"
 import {SimmorReducerContext} from "./simmorReducerContext"
 import {Constructor, getMethodsNames} from "./utils/utils"
 
-export interface ActionData {
+export interface Action {
   context: SimmorReducerContext<any>
   reducer: any
   // tslint:disable-next-line:ban-types
-  action: Function
-  actionName: string
+  method: Function
+  methodName: string
   args: any[]
 }
 
-export const callAction = (actionData: ActionData, middleware: Middleware) => {
+export const callAction = (action: Action, middleware: Middleware) => {
   return middleware(() => {
     let result: any
-    actionData.context.updateState(() => {
-      result = actionData.action.call(actionData.reducer, ...actionData.args)
+    action.context.updateState(() => {
+      result = action.method.call(action.reducer, ...action.args)
     })
     return result
-  })(actionData)
+  })(action)
 }
 
 export class SimmorReducer<TState> {
@@ -37,35 +36,28 @@ export class SimmorReducer<TState> {
   }
 }
 
-const actionsWereWrapped = Symbol()
+const actionsAreWrapped = Symbol()
 
 export interface ReducerOptions {
   middlewares: Middleware[]
 }
 
-export const defaultOptions: ReducerOptions = {middlewares: []}
+export const defaultReducerOptions: ReducerOptions = {middlewares: []}
 
-export function Reducer(options = defaultOptions) {
+export function Reducer(options = defaultReducerOptions) {
   return <T extends Constructor<any>>(constructor: T) => {
     wrapReducerActions(constructor, options)
   }
 }
 
-export function combineAllMiddleware(options: ReducerOptions) {
-  return combineMiddleware([
-    ...globalConfig.middlewares,
-    ...options.middlewares,
-  ])
-}
-
 // tslint:disable-next-line:ban-types
-export function wrapReducerActions(target: Function, options = defaultOptions) {
+export function wrapReducerActions(target: Function, options = defaultReducerOptions) {
   const targetAny = target as any
-  if (targetAny[actionsWereWrapped]) {
+  if (targetAny[actionsAreWrapped]) {
     return
   }
-  const middleware = combineAllMiddleware(options)
-  targetAny[actionsWereWrapped] = true
+  targetAny[actionsAreWrapped] = true
+  const middleware = combineMiddlewaresWithGlobals(options)
   for (const propertyName of getMethodsNames(target)) {
     const descriptor = Object.getOwnPropertyDescriptor(
       target.prototype,
@@ -78,9 +70,9 @@ export function wrapReducerActions(target: Function, options = defaultOptions) {
         {
           context: (this as any).context,
           reducer: this,
-          action,
+          method: action,
+          methodName: propertyName,
           args,
-          actionName: propertyName,
         },
         middleware,
       )

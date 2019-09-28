@@ -1,24 +1,26 @@
-import {combineMiddleware} from "./middleware"
-import {createRxState, InitialState} from "./rxState"
-import {callAction} from "./simmorReducer"
+import {combineMiddlewares, combineMiddlewaresWithGlobals} from "./middleware"
+import {createRxState, InitialState, RxState} from "./rxState"
+import {callAction, defaultReducerOptions} from "./simmorReducer"
 import {SimmorReducerContext} from "./simmorReducerContext"
 
-type Actions = Record<string, any>
-type LocalReducer<TState, TActions extends Actions> = (
+export type Actions = Record<string, (...args: any[]) => any>
+
+export type LocalReducer<TState, TActions extends Actions> = (
   ctx: SimmorReducerContext<TState>,
 ) => TActions
 
 const wrapActions = <TState, TActions extends Actions>(
   context: SimmorReducerContext<TState>,
   actions: TActions,
+  options = defaultReducerOptions
 ) => {
   const reducer = {} as any
   const keys = Object.keys(actions)
   for (const key of keys) {
     reducer[key] = (...args: any[]) => {
       return callAction(
-        {context, reducer, action: actions[key], args, actionName: key},
-        combineMiddleware([]),
+        {context, reducer, method: actions[key], args, methodName: key},
+        combineMiddlewares(options.middlewares),
       )
     }
   }
@@ -28,13 +30,23 @@ const wrapActions = <TState, TActions extends Actions>(
 export function createLocalStore<TState, TActions extends Actions>(
   initialState: InitialState<TState>,
   reducer: LocalReducer<TState, TActions>,
-) {
-  const state = createRxState(initialState)
-  const context = new SimmorReducerContext(state)
+  options = defaultReducerOptions
+): {rxState: RxState<TState>, dispatch: TActions} {
+  const rxState = createRxState(initialState)
+  const context = new SimmorReducerContext(rxState)
   const actions = reducer(context)
-  const wrapped = wrapActions(context, actions)
+  const dispatch = wrapActions(context, actions, options)
+
+  const middleware = combineMiddlewaresWithGlobals(options)
+  middleware(() => undefined)({
+    method: reducer,
+    methodName: "constructor",
+    reducer: dispatch,
+    args: [],
+    context,
+  })
   return {
-    store: state,
-    reducer: wrapped,
+    rxState,
+    dispatch,
   }
 }
