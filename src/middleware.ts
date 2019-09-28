@@ -1,10 +1,11 @@
-import {ActionData} from "./simmorReducer"
+import {globalConfig} from "./globalConfig"
+import {Action, ReducerOptions} from "./simmorReducer"
 
 export type Middleware = (
-  next: (data: ActionData) => any,
-) => (data: ActionData) => void
+  next: (data: Action) => any,
+) => (data: Action) => void
 
-export function combineMiddleware(middlewares: Middleware[]): Middleware {
+export function combineMiddlewares(middlewares: Middleware[]): Middleware {
   if (middlewares.length == 0) {
     return next => next
   }
@@ -14,4 +15,11 @@ export function combineMiddleware(middlewares: Middleware[]): Middleware {
   }
 
   return middlewares.reduce((t, b) => next => t(b(next)))
+}
+
+export function combineMiddlewaresWithGlobals(options: ReducerOptions) {
+  return combineMiddlewares([
+    ...globalConfig.middlewares,
+    ...options.middlewares,
+  ])
 }
