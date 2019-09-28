@@ -51,7 +51,7 @@ export function Reducer(options = defaultReducerOptions) {
 }
 
 export function wrapReducerActions(
-// tslint:disable-next-line:ban-types
+  // tslint:disable-next-line:ban-types
   target: Function,
   options = defaultReducerOptions,
 ) {

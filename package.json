@@ -1,8 +1,10 @@
 {
   "name": "simmor",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Simple immutable store",
-  "files": ["lib/*"],
+  "files": [
+    "lib/*"
+  ],
   "main": "lib/index.js",
   "module": "lib/index.mjs",
   "types": "lib/index.d.ts",
