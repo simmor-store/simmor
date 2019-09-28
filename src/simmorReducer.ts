@@ -50,8 +50,8 @@ export function Reducer(options = defaultReducerOptions) {
   }
 }
 
-// tslint:disable-next-line:ban-types
 export function wrapReducerActions(
+// tslint:disable-next-line:ban-types
   target: Function,
   options = defaultReducerOptions,
 ) {
