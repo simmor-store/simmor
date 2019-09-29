@@ -1,10 +1,6 @@
 import {combineMiddlewaresWithGlobals} from "./middleware"
 import {createRxState, InitialState, RxState} from "./rxState"
-import {
-  defaultReducerOptions,
-  SimmorReducer,
-  wrapReducerActions,
-} from "./simmorReducer"
+import {defaultReducerOptions, SimmorReducer, wrapReducerActions} from "./simmorReducer"
 import {SimmorReducerContext} from "./simmorReducerContext"
 
 export class ReducerStore<TState> extends SimmorReducer<TState> {
@@ -17,9 +13,9 @@ export class ReducerStore<TState> extends SimmorReducer<TState> {
     super()
     this.setInitialState(initialState)
     this._rxState.name = this.constructor.name
-    wrapReducerActions(this.constructor, options)
-    const middleware = combineMiddlewaresWithGlobals(options)
-    middleware(() => undefined)({
+    wrapReducerActions(this.constructor)
+    this.middleware = combineMiddlewaresWithGlobals(options)
+    this.middleware(() => undefined)({
       method: this.constructor,
       methodName: "constructor",
       reducer: this,

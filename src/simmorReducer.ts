@@ -1,7 +1,7 @@
 import {Draft} from "immer"
-import {combineMiddlewaresWithGlobals, Middleware} from "./middleware"
+import {Middleware} from "./middleware"
 import {SimmorReducerContext} from "./simmorReducerContext"
-import {Constructor, getMethodsNames} from "./utils/utils"
+import {getMethodsNames} from "./utils/utils"
 
 export interface Action {
   context: SimmorReducerContext<any>
@@ -24,6 +24,7 @@ export const callAction = (action: Action, middleware: Middleware) => {
 
 export class SimmorReducer<TState> {
   protected context!: SimmorReducerContext<TState>
+  public middleware: Middleware = next => next
   public setContext(context: SimmorReducerContext<TState>) {
     this.context = context
   }
@@ -36,7 +37,7 @@ export class SimmorReducer<TState> {
   }
 }
 
-const actionsAreWrapped = Symbol()
+const actionsAreWrappedSymbol = Symbol()
 
 export interface ReducerOptions {
   middlewares: Middleware[]
@@ -44,23 +45,15 @@ export interface ReducerOptions {
 
 export const defaultReducerOptions: ReducerOptions = {middlewares: []}
 
-export function Reducer(options = defaultReducerOptions) {
-  return <T extends Constructor<any>>(constructor: T) => {
-    wrapReducerActions(constructor, options)
-  }
-}
-
 export function wrapReducerActions(
   // tslint:disable-next-line:ban-types
-  target: Function,
-  options = defaultReducerOptions,
+  target: Function
 ) {
   const targetAny = target as any
-  if (targetAny[actionsAreWrapped]) {
+  if (targetAny[actionsAreWrappedSymbol]) {
     return
   }
-  targetAny[actionsAreWrapped] = true
-  const middleware = combineMiddlewaresWithGlobals(options)
+  targetAny[actionsAreWrappedSymbol] = true
   for (const propertyName of getMethodsNames(target)) {
     const descriptor = Object.getOwnPropertyDescriptor(
       target.prototype,
@@ -69,15 +62,16 @@ export function wrapReducerActions(
 
     const action = descriptor.value
     descriptor.value = function(...args: any[]) {
+      const reducer = this as SimmorReducer<any>
       return callAction(
         {
           context: (this as any).context,
-          reducer: this,
+          reducer,
           method: action,
           methodName: propertyName,
           args,
         },
-        middleware,
+        reducer.middleware,
       )
     }
     Object.defineProperty(target.prototype, propertyName, descriptor)
