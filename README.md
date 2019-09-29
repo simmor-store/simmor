@@ -50,7 +50,7 @@ The simplest way to use simmor is by creating a localStore.
 # Store class
 It's possible to create store as class
 
-```
+```ts
 export type CounterState = { value: number }
 
 export class CounterStore extends ReducerStore<CounterState> {
@@ -109,7 +109,7 @@ export function createLocalStorageMiddleware(name: string): Middleware {
 }
 ```
 
-```
+```ts
 const persistentStore = new CounterStore({value: 0}, {
     middlewares: [createLocalStorageMiddleware('counter')]
 })
@@ -121,7 +121,7 @@ const persistentStore = new CounterStore({value: 0}, {
 It is possible to slice a part of the state.
 For example if we need two counters and we want to swap values between them.
 
-```
+```ts
 
 type CounterPairState = {
   left: CounterState
