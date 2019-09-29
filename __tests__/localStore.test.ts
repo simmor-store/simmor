@@ -17,6 +17,8 @@ it("localStore", () => {
   expect(rxState.state.value).toEqual(1)
   dispatch.increase()
   expect(rxState.state.value).toEqual(2)
+  dispatch.increase()
+  expect(rxState.state.value).toEqual(3)
 })
 
 it("localStore nested action", () => {
