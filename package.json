@@ -6,7 +6,7 @@
     "lib/*"
   ],
   "main": "lib/index.js",
-  "module": "lib/index.mjs",
+  "module": "lib/index.module.js",
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "jest --config jestconfig.json",
