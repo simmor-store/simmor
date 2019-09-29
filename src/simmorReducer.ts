@@ -47,7 +47,7 @@ export const defaultReducerOptions: ReducerOptions = {middlewares: []}
 
 export function wrapReducerActions(
   // tslint:disable-next-line:ban-types
-  target: Function
+  target: Function,
 ) {
   const targetAny = target as any
   if (targetAny[actionsAreWrappedSymbol]) {

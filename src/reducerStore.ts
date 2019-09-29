@@ -1,6 +1,10 @@
 import {combineMiddlewaresWithGlobals} from "./middleware"
 import {createRxState, InitialState, RxState} from "./rxState"
-import {defaultReducerOptions, SimmorReducer, wrapReducerActions} from "./simmorReducer"
+import {
+  defaultReducerOptions,
+  SimmorReducer,
+  wrapReducerActions,
+} from "./simmorReducer"
 import {SimmorReducerContext} from "./simmorReducerContext"
 
 export class ReducerStore<TState> extends SimmorReducer<TState> {
