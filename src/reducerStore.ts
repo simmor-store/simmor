@@ -10,7 +10,7 @@ import {SimmorReducerContext} from "./simmorReducerContext"
 export class ReducerStore<TState> extends SimmorReducer<TState> {
   private _rxState!: RxState<TState>
 
-  constructor(initialState: TState, options = defaultReducerOptions) {
+  constructor(initialState: InitialState<TState>, options = defaultReducerOptions) {
     super()
     this.setInitialState(initialState)
     this._rxState.name = this.constructor.name
