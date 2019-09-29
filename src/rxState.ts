@@ -105,7 +105,10 @@ export class RxSliceState<
 
   constructor(private parent: RxState<TParentState>, private key: TKey) {
     super()
-    this._state$ = parent.state$.pipe(select(x => x[key]), filter(x => x !== undefined))
+    this._state$ = parent.state$.pipe(
+      select(x => x[key]),
+      filter(x => x !== undefined),
+    )
     this.name = `${this.parent.name}.${key}`
     this.initialState = this.parent.initialState[this.key]
   }
