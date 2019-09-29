@@ -1,5 +1,6 @@
 import {createDraft, Draft, finishDraft} from "immer"
 import {BehaviorSubject, Observable} from "rxjs"
+import {filter} from "rxjs/operators"
 import {select} from "./utils/rx-utils"
 
 export type InitialState<TState> = RxState<TState> | TState
@@ -94,7 +95,7 @@ export class RxSliceState<
     return (this.parent.draft as any)[this.key]
   }
 
-  get state$() {
+  get state$(): Observable<TParentState[TKey]> {
     return this._state$
   }
 
@@ -104,7 +105,7 @@ export class RxSliceState<
 
   constructor(private parent: RxState<TParentState>, private key: TKey) {
     super()
-    this._state$ = parent.state$.pipe(select(x => x[key]))
+    this._state$ = parent.state$.pipe(select(x => x[key]), filter(x => x !== undefined))
     this.name = `${this.parent.name}.${key}`
     this.initialState = this.parent.initialState[this.key]
   }
@@ -117,7 +118,7 @@ export class RxSliceState<
 
   public setState(state: TParentState[TKey]) {
     this.updateState(() => {
-      ;(this.parent.draft as any)[this.key] = state
+      this.parent.draft[this.key] = state as any
     })
   }
 }
