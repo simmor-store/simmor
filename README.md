@@ -14,7 +14,7 @@ Simmor is framework agnostic, but examples use [react-simmor](https://github.com
 
 
 # Local store
-The simplest way to use simmor is by createing a localStore.
+The simplest way to use simmor is by creating a localStore.
 
 ```ts
   const [state, dispatch] = useLocalStore({value: 0}, ctx => ({
