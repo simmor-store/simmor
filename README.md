@@ -49,7 +49,7 @@ The simplest way to use simmor is by creating a localStore.
 ```
 
 # Store class
-It's possible to create store as class
+It's possible to define a store as a class
 
 ```ts
 export type CounterState = { value: number }
