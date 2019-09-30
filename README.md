@@ -1,4 +1,4 @@
-Simmor is a simple immutable boilerplate-free store with support of middlewares and state slicing.
+Simmor is a simple immutable boilerplate-free framework-agnostic store with support of middlewares and state slicing.
 
 
 # Install
@@ -6,14 +6,15 @@ Simmor is a simple immutable boilerplate-free store with support of middlewares 
 
 # Examples
 
-Simmor is framework agnostic, but examples use [react-simmor](https://github.com/simmor-store/react-simmor) package
+* [React](https://github.com/simmor-store/react-simmor) 
+* [Angular](https://github.com/simmor-store/angular-simmor-examples)
 
 # Online demo
 
 [https://codesandbox.io/s/github/simmor-store/react-simmor/tree/master/examples](https://codesandbox.io/s/github/simmor-store/react-simmor/tree/master/examples)
 
+# React examples
 
-# Local store
 The simplest way to use simmor is by creating a localStore.
 
 ```ts
