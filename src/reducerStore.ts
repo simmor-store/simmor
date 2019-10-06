@@ -16,7 +16,9 @@ export class ReducerStore<TState> extends SimmorReducer<TState> {
   ) {
     super()
     this.setInitialState(initialState)
-    this._rxState.name = this.constructor.name
+    if(!this._rxState.name){
+      this._rxState.name = this.constructor.name
+    }
     wrapReducerActions(this.constructor)
     this.middleware = combineMiddlewaresWithGlobals(options)
     this.middleware(() => undefined)({
