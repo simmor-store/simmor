@@ -1,7 +1,6 @@
 import "rxjs"
 import {createRxState, InitialState, RxState} from "./rxState"
 import {SimmorReducer} from "./simmorReducer"
-import {SimmorReducerContext} from "./simmorReducerContext"
 
 export class SimmorStore<TReducer extends SimmorReducer<TState>, TState> {
   private readonly reducer: TReducer
@@ -17,9 +16,9 @@ export class SimmorStore<TReducer extends SimmorReducer<TState>, TState> {
   }
 
   public setInitialState(initialState: InitialState<TState>) {
-    const rxState = createRxState(initialState)
+    const rxState = createRxState(initialState, next => next, this.reducer.constructor.name)
     this._rxState = rxState
-    this.reducer.setContext(new SimmorReducerContext(rxState))
+    this.reducer.setRxState(this._rxState)
   }
 
   get state() {

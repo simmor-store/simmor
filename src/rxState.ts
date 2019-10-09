@@ -1,9 +1,17 @@
 import {createDraft, Draft, finishDraft} from "immer"
 import {BehaviorSubject, Observable} from "rxjs"
 import {filter} from "rxjs/operators"
+import {Action} from "./action"
+import {Middleware} from "./middleware"
 import {select} from "./utils/rx-utils"
 
 export type InitialState<TState> = RxState<TState> | TState
+
+export interface UpdateStateInfo {
+  methodName?: string,
+  args?: any[],
+  context?: this,
+}
 
 export function isRxState<TState>(
   value: InitialState<TState>,
@@ -11,8 +19,14 @@ export function isRxState<TState>(
   return value instanceof RxState
 }
 
-export function createRxState<TState>(initialState: InitialState<TState>) {
-  return isRxState(initialState) ? initialState : new RxRootState(initialState)
+export function createRxState<TState>(
+  initialState: InitialState<TState>,
+  middleware: Middleware,
+  name: string
+) {
+  return isRxState(initialState)
+    ? initialState
+    : new RxRootState(initialState, middleware, name)
 }
 
 export abstract class RxState<TState> {
@@ -22,7 +36,10 @@ export abstract class RxState<TState> {
   abstract get draft(): Draft<TState>
   public initialState!: TState
 
-  public abstract updateState(recipe: (draft: Draft<TState>) => void): void
+  public abstract updateState(
+    recipe: (draft: Draft<TState>) => void,
+    info?: UpdateStateInfo,
+  ): void
 
   public abstract setState(state: TState): void
 
@@ -54,22 +71,44 @@ export class RxRootState<TState> extends RxState<TState> {
     throw new Error("draft doesn't exists")
   }
 
-  constructor(readonly initialState: TState) {
+  constructor(
+    readonly initialState: TState,
+    readonly middleware: Middleware = next => next,
+    name = ""
+  ) {
     super()
+    this.name = name
     this.subject$ = new BehaviorSubject(initialState)
+    const newState = middleware(() => initialState)({
+      rxState: this,
+      args: [initialState],
+      context: this,
+      methodName: "constructor"
+    })
+    if (newState !== initialState) {
+      this.subject$.next(newState)
+    }
   }
 
-  public updateState(recipe: (draft: Draft<TState>) => void) {
+  public updateState(recipe: (draft: Draft<TState>) => void, info: UpdateStateInfo = {}) {
+    const action: Action = {
+      methodName: info.methodName || "updateState",
+      context: info.context || this,
+      args: info.args || [],
+      rxState: this,
+    }
     let finish = false
     if (!this.currentDraft) {
       this.currentDraft = createDraft(this.state)
       finish = true
     }
-    recipe(this.currentDraft)
+    const newState = this.middleware(() => {
+      recipe(this.currentDraft as any)
+      return finish ? (finishDraft(this.currentDraft) as TState) : undefined
+    })(action)
     if (!finish) {
       return
     }
-    const newState = finishDraft(this.currentDraft) as TState
     this.currentDraft = undefined
     if (newState !== this.state) {
       this.subject$.next(newState)
@@ -78,17 +117,21 @@ export class RxRootState<TState> extends RxState<TState> {
 
   public setState(state: TState) {
     this.updateState(draft => {
-      for (const key of [...Object.keys(draft), ...Object.keys(state)]) {
-        ;(draft as any)[key] = (state as any)[key]
-      }
-    })
+        for (const key of [...Object.keys(draft), ...Object.keys(state)]) {
+          ;(draft as any)[key] = (state as any)[key]
+        }
+      }, {
+        methodName: "setState",
+        args: [state],
+      },
+    )
   }
 }
 
 export class RxSliceState<
   TParentState,
   TKey extends keyof TParentState
-> extends RxState<TParentState[TKey]> {
+  > extends RxState<TParentState[TKey]> {
   private readonly _state$: Observable<TParentState[TKey]>
 
   get draft(): Draft<TParentState[TKey]> {
@@ -103,7 +146,7 @@ export class RxSliceState<
     return this.parent.state[this.key]
   }
 
-  constructor(private parent: RxState<TParentState>, private key: TKey) {
+  constructor(readonly parent: RxState<TParentState>, private key: TKey) {
     super()
     this._state$ = parent.state$.pipe(
       select(x => x[key]),
@@ -113,15 +156,24 @@ export class RxSliceState<
     this.initialState = this.parent.initialState[this.key]
   }
 
-  public updateState(recipe: (draft: Draft<TParentState[TKey]>) => void): void {
+  public updateState(
+    recipe: (draft: Draft<TParentState[TKey]>) => void,
+    info?: UpdateStateInfo,
+  ): void {
     this.parent.updateState(() => {
       recipe(this.draft)
-    })
+    }, info)
   }
 
   public setState(state: TParentState[TKey]) {
-    this.updateState(() => {
-      this.parent.draft[this.key] = state as any
-    })
+    this.updateState(
+      () => {
+        this.parent.draft[this.key] = state as any
+      },
+      {
+        methodName: "setState",
+        args: [state],
+      },
+    )
   }
 }

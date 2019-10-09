@@ -1,39 +1,21 @@
 import {Draft} from "immer"
+import {callAction} from "./action"
 import {Middleware} from "./middleware"
-import {SimmorReducerContext} from "./simmorReducerContext"
+import {RxState} from "./rxState"
 import {getMethodsNames} from "./utils/utils"
 
-export interface Action {
-  context: SimmorReducerContext<any>
-  reducer: any
-  // tslint:disable-next-line:ban-types
-  method: Function
-  methodName: string
-  args: any[]
-}
-
-export const callAction = (action: Action, middleware: Middleware) => {
-  return middleware(() => {
-    let result: any
-    action.context.updateState(() => {
-      result = action.method.call(action.reducer, ...action.args)
-    })
-    return result
-  })(action)
-}
-
 export class SimmorReducer<TState> {
-  protected context!: SimmorReducerContext<TState>
-  public middleware: Middleware = next => next
-  public setContext(context: SimmorReducerContext<TState>) {
-    this.context = context
+  public rxState!: RxState<TState>
+  public setRxState(rxState: RxState<TState>) {
+    this.rxState = rxState
   }
+
   get draft() {
-    return this.context.draft
+    return this.rxState.draft
   }
 
   public updateState(recipe: (draft: Draft<TState>) => void) {
-    this.context.updateState(recipe)
+    this.rxState.updateState(recipe, undefined)
   }
 }
 
@@ -41,9 +23,10 @@ const actionsAreWrappedSymbol = Symbol()
 
 export interface ReducerOptions {
   middlewares: Middleware[]
+  name: string
 }
 
-export const defaultReducerOptions: ReducerOptions = {middlewares: []}
+export const defaultReducerOptions: ReducerOptions = {middlewares: [], name: ''}
 
 export function wrapReducerActions(
   // tslint:disable-next-line:ban-types
@@ -60,19 +43,15 @@ export function wrapReducerActions(
       propertyName,
     )!
 
-    const action = descriptor.value
+    const method = descriptor.value
     descriptor.value = function(...args: any[]) {
       const reducer = this as SimmorReducer<any>
-      return callAction(
-        {
-          context: (this as any).context,
-          reducer,
-          method: action,
-          methodName: propertyName,
-          args,
-        },
-        reducer.middleware,
-      )
+      return callAction(method, {
+        rxState: reducer.rxState,
+        context: reducer,
+        methodName: propertyName,
+        args,
+      })
     }
     Object.defineProperty(target.prototype, propertyName, descriptor)
   }

@@ -1,7 +1,7 @@
 import {Draft} from "immer"
 import {RxState} from "./rxState"
 
-export class SimmorReducerContext<TState> {
+export class LocalStoreContext<TState> {
   get draft(): Draft<TState> {
     return this.rxState.draft
   }
@@ -9,6 +9,6 @@ export class SimmorReducerContext<TState> {
   constructor(public rxState: RxState<TState>) {}
 
   public updateState<T>(recipe: (draft: Draft<TState>) => T) {
-    this.rxState.updateState(recipe)
+    this.rxState.updateState(recipe, undefined)
   }
 }

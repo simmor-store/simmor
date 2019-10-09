@@ -1,27 +1,29 @@
-import {combineMiddlewares, combineMiddlewaresWithGlobals} from "./middleware"
+import {callAction} from "./action"
+import {LocalStoreContext} from "./localStoreContext"
+import {combineMiddlewaresWithGlobals} from "./middleware"
 import {createRxState, InitialState, RxState} from "./rxState"
-import {callAction, defaultReducerOptions} from "./simmorReducer"
-import {SimmorReducerContext} from "./simmorReducerContext"
+import {defaultReducerOptions} from "./simmorReducer"
 
 export type Actions = Record<string, (...args: any[]) => any>
 
 export type LocalReducer<TState, TActions extends Actions> = (
-  ctx: SimmorReducerContext<TState>,
+  ctx: LocalStoreContext<TState>,
 ) => TActions
 
 const wrapActions = <TState, TActions extends Actions>(
-  context: SimmorReducerContext<TState>,
+  rxState: RxState<TState>,
   actions: TActions,
-  options = defaultReducerOptions,
 ) => {
   const reducer = {} as any
   const keys = Object.keys(actions)
   for (const key of keys) {
     reducer[key] = (...args: any[]) => {
-      return callAction(
-        {context, reducer, method: actions[key], args, methodName: key},
-        combineMiddlewares(options.middlewares),
-      )
+      return callAction(actions[key], {
+        rxState,
+        context: reducer,
+        args,
+        methodName: key,
+      })
     }
   }
   return reducer as TActions
@@ -32,19 +34,12 @@ export function createLocalStore<TState, TActions extends Actions>(
   reducer: LocalReducer<TState, TActions>,
   options = defaultReducerOptions,
 ): {rxState: RxState<TState>; dispatch: TActions} {
-  const rxState = createRxState(initialState)
-  const context = new SimmorReducerContext(rxState)
-  const actions = reducer(context)
-  const dispatch = wrapActions(context, actions, options)
-
   const middleware = combineMiddlewaresWithGlobals(options)
-  middleware(() => undefined)({
-    method: reducer,
-    methodName: "constructor",
-    reducer: dispatch,
-    args: [],
-    context,
-  })
+  const rxState = createRxState(initialState, middleware, options.name)
+  const context = new LocalStoreContext(rxState)
+  const actions = reducer(context)
+  const dispatch = wrapActions(rxState, actions)
+
   return {
     rxState,
     dispatch,

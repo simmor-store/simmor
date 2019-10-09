@@ -1,43 +1,27 @@
-import {combineMiddlewaresWithGlobals} from "./middleware"
-import {createRxState, InitialState, RxState} from "./rxState"
+import {combineMiddlewaresWithGlobals, Middleware} from "./middleware"
+import {createRxState, InitialState} from "./rxState"
 import {
-  defaultReducerOptions,
+  defaultReducerOptions, ReducerOptions,
   SimmorReducer,
   wrapReducerActions,
 } from "./simmorReducer"
-import {SimmorReducerContext} from "./simmorReducerContext"
 
 export class ReducerStore<TState> extends SimmorReducer<TState> {
-  private _rxState!: RxState<TState>
+  private middleware: Middleware = next => next
 
   constructor(
     initialState: InitialState<TState>,
-    options = defaultReducerOptions,
+    private options: Partial<ReducerOptions> = {},
   ) {
     super()
+    this.middleware = combineMiddlewaresWithGlobals({...defaultReducerOptions,... options})
     this.setInitialState(initialState)
-    if (!this._rxState.name) {
-      this._rxState.name = this.constructor.name
-    }
     wrapReducerActions(this.constructor)
-    this.middleware = combineMiddlewaresWithGlobals(options)
-    this.middleware(() => undefined)({
-      method: this.constructor,
-      methodName: "constructor",
-      reducer: this,
-      args: [],
-      context: this.context,
-    })
-  }
-
-  get rxState() {
-    return this._rxState
   }
 
   public setInitialState(initialState: InitialState<TState>): this {
-    const rxState = createRxState(initialState)
-    this._rxState = rxState
-    this.setContext(new SimmorReducerContext(rxState))
+    const rxState = createRxState(initialState, this.middleware, this.options.name || this.constructor.name)
+    this.setRxState(rxState)
     return this
   }
 

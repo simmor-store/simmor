@@ -29,20 +29,20 @@ it("rxSliceState", () => {
   const rxState = root.slice("foo")
   rxState.updateState(draft => {
     draft.bar = 4
-  })
+  }, undefined)
   expect(rxState.state.bar).toEqual(4)
   expect(root.state.foo.bar).toEqual(4)
 })
 
 it("rxSliceState reset", () => {
-  const root = new RxRootState(initialState)
+  const root = new RxRootState(initialState, next => next)
   const sliceState = root.slice("foo")
   root.updateState(draft => {
     draft.value = 3
-  })
+  }, undefined)
   sliceState.updateState(draft => {
     draft.bar = 4
-  })
+  }, undefined)
   sliceState.reset()
   expect(root.state.value).toEqual(3)
   expect(sliceState.state.bar).toEqual(2)
