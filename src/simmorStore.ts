@@ -16,7 +16,11 @@ export class SimmorStore<TReducer extends SimmorReducer<TState>, TState> {
   }
 
   public setInitialState(initialState: InitialState<TState>) {
-    const rxState = createRxState(initialState, next => next, this.reducer.constructor.name)
+    const rxState = createRxState(
+      initialState,
+      next => next,
+      this.reducer.constructor.name,
+    )
     this._rxState = rxState
     this.reducer.setRxState(this._rxState)
   }

@@ -8,9 +8,9 @@ import {select} from "./utils/rx-utils"
 export type InitialState<TState> = RxState<TState> | TState
 
 export interface UpdateStateInfo {
-  methodName?: string,
-  args?: any[],
-  context?: this,
+  methodName?: string
+  args?: any[]
+  context?: this
 }
 
 export function isRxState<TState>(
@@ -22,7 +22,7 @@ export function isRxState<TState>(
 export function createRxState<TState>(
   initialState: InitialState<TState>,
   middleware: Middleware,
-  name: string
+  name: string,
 ) {
   return isRxState(initialState)
     ? initialState
@@ -74,7 +74,7 @@ export class RxRootState<TState> extends RxState<TState> {
   constructor(
     readonly initialState: TState,
     readonly middleware: Middleware = next => next,
-    name = ""
+    name = "",
   ) {
     super()
     this.name = name
@@ -83,14 +83,17 @@ export class RxRootState<TState> extends RxState<TState> {
       rxState: this,
       args: [initialState],
       context: this,
-      methodName: "constructor"
+      methodName: "constructor",
     })
     if (newState !== initialState) {
       this.subject$.next(newState)
     }
   }
 
-  public updateState(recipe: (draft: Draft<TState>) => void, info: UpdateStateInfo = {}) {
+  public updateState(
+    recipe: (draft: Draft<TState>) => void,
+    info: UpdateStateInfo = {},
+  ) {
     const action: Action = {
       methodName: info.methodName || "updateState",
       context: info.context || this,
@@ -116,11 +119,13 @@ export class RxRootState<TState> extends RxState<TState> {
   }
 
   public setState(state: TState) {
-    this.updateState(draft => {
+    this.updateState(
+      draft => {
         for (const key of [...Object.keys(draft), ...Object.keys(state)]) {
           ;(draft as any)[key] = (state as any)[key]
         }
-      }, {
+      },
+      {
         methodName: "setState",
         args: [state],
       },
@@ -131,7 +136,7 @@ export class RxRootState<TState> extends RxState<TState> {
 export class RxSliceState<
   TParentState,
   TKey extends keyof TParentState
-  > extends RxState<TParentState[TKey]> {
+> extends RxState<TParentState[TKey]> {
   private readonly _state$: Observable<TParentState[TKey]>
 
   get draft(): Draft<TParentState[TKey]> {

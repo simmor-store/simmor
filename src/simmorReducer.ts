@@ -26,7 +26,7 @@ export interface ReducerOptions {
   name: string
 }
 
-export const defaultReducerOptions: ReducerOptions = {middlewares: [], name: ''}
+export const defaultReducerOptions: ReducerOptions = {middlewares: [], name: ""}
 
 export function wrapReducerActions(
   // tslint:disable-next-line:ban-types
