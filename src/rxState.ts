@@ -118,14 +118,14 @@ export class RxRootState<TState> extends RxState<TState> {
     this.replaceState(newState)
   }
 
-  public replaceState(newState: TState){
+  public replaceState(newState: TState) {
     if (newState !== this.state) {
       this.subject$.next(newState)
     }
   }
 
-  public commitDraftChanges(){
-    if(!this.currentDraft){
+  public commitDraftChanges() {
+    if (!this.currentDraft) {
       return
     }
     const newState = finishDraft(this.currentDraft) as TState
@@ -196,5 +196,4 @@ export class RxSliceState<
       },
     )
   }
-
 }
