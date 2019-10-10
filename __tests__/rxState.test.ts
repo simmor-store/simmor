@@ -48,3 +48,17 @@ it("rxSliceState reset", () => {
   expect(sliceState.state.bar).toEqual(2)
   expect(root.state.foo.bar).toEqual(2)
 })
+
+
+it("commitDraftChanges", () => {
+  const rxState = new RxRootState(initialState)
+  rxState.updateState(() => {
+    rxState.draft.value = 2
+    expect(rxState.state.value).toEqual(1)
+    rxState.commitDraftChanges()
+    expect(rxState.state.value).toEqual(2)
+    rxState.draft.value = 3
+    expect(rxState.state.value).toEqual(2)
+  })
+  expect(rxState.state.value).toEqual(3)
+})

@@ -56,6 +56,10 @@ export class RxRootState<TState> extends RxState<TState> {
   private subject$: BehaviorSubject<TState>
   private currentDraft?: Draft<TState>
 
+  get hasDraft() {
+    return this.currentDraft !== undefined
+  }
+
   get state() {
     return this.subject$.value
   }
@@ -85,9 +89,7 @@ export class RxRootState<TState> extends RxState<TState> {
       context: this,
       methodName: "constructor",
     })
-    if (newState !== initialState) {
-      this.subject$.next(newState)
-    }
+    this.replaceState(newState)
   }
 
   public updateState(
@@ -107,15 +109,28 @@ export class RxRootState<TState> extends RxState<TState> {
     }
     const newState = this.middleware(() => {
       recipe(this.currentDraft as any)
-      return finish ? (finishDraft(this.currentDraft) as TState) : undefined
+      return finish ? (finishDraft(this.currentDraft) as TState) : this.state
     })(action)
     if (!finish) {
       return
     }
     this.currentDraft = undefined
+    this.replaceState(newState)
+  }
+
+  public replaceState(newState: TState){
     if (newState !== this.state) {
       this.subject$.next(newState)
     }
+  }
+
+  public commitDraftChanges(){
+    if(!this.currentDraft){
+      return
+    }
+    const newState = finishDraft(this.currentDraft) as TState
+    this.currentDraft = createDraft(newState)
+    this.replaceState(newState)
   }
 
   public setState(state: TState) {
@@ -181,4 +196,5 @@ export class RxSliceState<
       },
     )
   }
+
 }

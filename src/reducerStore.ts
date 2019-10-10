@@ -1,5 +1,5 @@
 import {combineMiddlewaresWithGlobals, Middleware} from "./middleware"
-import {createRxState, InitialState} from "./rxState"
+import {createRxState, InitialState, RxState} from "./rxState"
 import {
   defaultReducerOptions,
   ReducerOptions,
@@ -39,5 +39,9 @@ export class ReducerStore<TState> extends SimmorReducer<TState> {
 
   get state$() {
     return this.rxState.state$
+  }
+
+  public slice<TKey extends keyof TState>(key: TKey): RxState<TState[TKey]> {
+    return this.rxState.slice(key)
   }
 }
