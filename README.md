@@ -42,13 +42,13 @@ State can be modified throw `draft` field. Simmor uses [immer](https://github.co
 
 ```
 ```ts
-    <div className="counter">
-      <span>{state.value}</span>
-      <button onClick={() => dispatch.increase()}>+</button>
-      <button onClick={() => dispatch.decrease()}>-</button>
-      <button onClick={() => dispatch.setValue(0)}>reset</button>
-      <button onClick={() => dispatch.increaseWithDelay()}>Increase with delay</button>
-    </div>
+  <div className="counter">
+    <span>{state.value}</span>
+    <button onClick={() => dispatch.increase()}>+</button>
+    <button onClick={() => dispatch.decrease()}>-</button>
+    <button onClick={() => dispatch.setValue(0)}>reset</button>
+    <button onClick={() => dispatch.increaseWithDelay()}>Increase with delay</button>
+  </div>
 
 ```
 
