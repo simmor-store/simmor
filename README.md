@@ -15,7 +15,9 @@ Simmor is a simple immutable boilerplate-free framework-agnostic store with supp
 
 # React examples
 
-The simplest way to use simmor is by creating a localStore.
+The simplest way to use simmor is by creating a localStore. Here an example of counter store that has state `{value: number}`.
+
+State can be modified throw `draft` field. Simmor uses [immer](https://github.com/immerjs/immer) that can update immutable state by mutating it.
 
 ```ts
   const [state, dispatch] = useLocalStore({value: 0}, ctx => ({
@@ -49,7 +51,7 @@ The simplest way to use simmor is by creating a localStore.
 ```
 
 # Store class
-It's possible to define a store as a class
+We can define store as class.
 
 ```ts
 export type CounterState = { value: number }
@@ -93,22 +95,25 @@ const store = new CounterStore({value: 0})
 ```
 
 # Middleware
-An example of middleware that saves state to localStorage.
+Simmor supports middlewares. Here an example of middleware that saves state to localStorage.
 ```ts
-export function createLocalStorageMiddleware(name: string): Middleware {
+export function createLocalStorageMiddleware(key: string): Middleware {
   return next => action => {
-    const result = next(action)
+    const newState = next(action)
     if (action.methodName === "constructor") {
-      const savedState = localStorage.getItem(name)
+      const savedState = localStorage.getItem(key)
       if (savedState) {
-        action.context.rxState.setState(JSON.parse(savedState))
+        return JSON.parse(savedState)
       }
     }
-    localStorage.setItem(name, JSON.stringify(action.context.rxState.state))
-    return result
+    localStorage.setItem(key, JSON.stringify(newState))
+    return newState
   }
 }
+
 ```
+We can pass middlewares in the constructor of the store and our component can now save its state between sessions.
+
 
 ```ts
 const persistentStore = new CounterStore({value: 0}, {
@@ -130,8 +135,8 @@ type CounterPairState = {
 }
 
 export class CounterPairStore extends ReducerStore<CounterPairState> {
-  leftStore = new CounterStore(this.rxState.slice('left'))
-  rightStore = new CounterStore(this.rxState.slice('right'))
+  leftStore = new CounterStore(this.slice('left'))
+  rightStore = new CounterStore(this.slice('right'))
 
   constructor() {
     super({left: {value: 100}, right: {value: 200}})
@@ -149,6 +154,7 @@ export class CounterPairStore extends ReducerStore<CounterPairState> {
 }
 
 ```
+And the component
 ```ts
 const store = new CounterPairStore()
 export const CounterPair = () => {
