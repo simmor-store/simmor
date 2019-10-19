@@ -62,3 +62,23 @@ it("commitDraftChanges", () => {
   })
   expect(rxState.state.value).toEqual(3)
 })
+
+
+it("rollback", () => {
+  const rxState = new RxRootState(initialState)
+  const rollbackValue = rxState.updateStateWithRollback(draft => {
+    draft.value = 2
+  })
+  expect(rxState.state.value).toEqual(2)
+  const rollbackBar = rxState.updateStateWithRollback(draft => {
+    draft.foo.bar = 3
+  })
+
+  expect(rxState.state.foo.bar).toEqual(3)
+  rollbackValue()
+  expect(rxState.state.value).toEqual(initialState.value)
+  expect(rxState.state.foo.bar).toEqual(3)
+  rollbackBar()
+  expect(rxState.state.value).toEqual(1)
+  expect(rxState.state.foo.bar).toEqual(initialState.foo.bar)
+})

@@ -1,4 +1,4 @@
-import {createDraft, Draft, finishDraft} from "immer"
+import {applyPatches, createDraft, Draft, finishDraft, Patch, PatchListener} from "immer"
 import {BehaviorSubject, Observable} from "rxjs"
 import {filter} from "rxjs/operators"
 import {Action} from "./action"
@@ -92,30 +92,64 @@ export class RxRootState<TState> extends RxState<TState> {
     this.replaceState(newState)
   }
 
-  public updateState(
+  private updateStateWithPatchListner(
     recipe: (draft: Draft<TState>) => void,
     info: UpdateStateInfo = {},
+    listener?: PatchListener
   ) {
+
+    let topLevelUpdate = false
+    if (!this.currentDraft) {
+      this.currentDraft = createDraft(this.state)
+      topLevelUpdate = true
+    }
+
     const action: Action = {
       methodName: info.methodName || "updateState",
       context: info.context || this,
       args: info.args || [],
       rxState: this,
     }
-    let finish = false
-    if (!this.currentDraft) {
-      this.currentDraft = createDraft(this.state)
-      finish = true
-    }
+
     const newState = this.middleware(() => {
       recipe(this.currentDraft as any)
-      return finish ? (finishDraft(this.currentDraft) as TState) : this.state
+      if(topLevelUpdate){
+        return finishDraft(this.currentDraft, listener) as TState
+      }
+      if(listener){
+        this.refreshCurrentDraft(listener)
+      }
+      return this.state
     })(action)
-    if (!finish) {
+    if (!topLevelUpdate) {
       return
     }
     this.currentDraft = undefined
     this.replaceState(newState)
+  }
+
+
+  public updateStateWithRollback(
+    recipe: (draft: Draft<TState>) => void,
+    info: UpdateStateInfo = {},
+  ) {
+    this.refreshCurrentDraft()
+    let inversePatches: Patch[] = []
+    this.updateStateWithPatchListner(recipe, info, (patches, invPatches) => {
+      inversePatches = invPatches
+    })
+    return () => {
+      this.updateState(draft => {
+        applyPatches(draft, inversePatches)
+      })
+    }
+  }
+
+  public updateState(
+    recipe: (draft: Draft<TState>) => void,
+    info: UpdateStateInfo = {},
+  ) {
+    this.updateStateWithPatchListner(recipe, info)
   }
 
   public replaceState(newState: TState) {
@@ -124,13 +158,22 @@ export class RxRootState<TState> extends RxState<TState> {
     }
   }
 
-  public commitDraftChanges() {
+  private refreshCurrentDraft(
+    listener?: PatchListener
+  ){
     if (!this.currentDraft) {
       return
     }
-    const newState = finishDraft(this.currentDraft) as TState
+    const newState = finishDraft(this.currentDraft, listener) as TState
     this.currentDraft = createDraft(newState)
-    this.replaceState(newState)
+    return newState
+  }
+
+  public commitDraftChanges() {
+    const newState = this.refreshCurrentDraft()
+    if(newState !== undefined){
+      this.replaceState(newState)
+    }
   }
 
   public setState(state: TState) {
