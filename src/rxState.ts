@@ -1,4 +1,11 @@
-import {applyPatches, createDraft, Draft, finishDraft, Patch, PatchListener} from "immer"
+import {
+  applyPatches,
+  createDraft,
+  Draft,
+  finishDraft,
+  Patch,
+  PatchListener,
+} from "immer"
 import {BehaviorSubject, Observable} from "rxjs"
 import {filter} from "rxjs/operators"
 import {Action} from "./action"
@@ -95,9 +102,8 @@ export class RxRootState<TState> extends RxState<TState> {
   private updateStateWithPatchListner(
     recipe: (draft: Draft<TState>) => void,
     info: UpdateStateInfo = {},
-    listener?: PatchListener
+    listener?: PatchListener,
   ) {
-
     let topLevelUpdate = false
     if (!this.currentDraft) {
       this.currentDraft = createDraft(this.state)
@@ -113,10 +119,10 @@ export class RxRootState<TState> extends RxState<TState> {
 
     const newState = this.middleware(() => {
       recipe(this.currentDraft as any)
-      if(topLevelUpdate){
+      if (topLevelUpdate) {
         return finishDraft(this.currentDraft, listener) as TState
       }
-      if(listener){
+      if (listener) {
         this.refreshCurrentDraft(listener)
       }
       return this.state
@@ -127,7 +133,6 @@ export class RxRootState<TState> extends RxState<TState> {
     this.currentDraft = undefined
     this.replaceState(newState)
   }
-
 
   public updateStateWithRollback(
     recipe: (draft: Draft<TState>) => void,
@@ -158,9 +163,7 @@ export class RxRootState<TState> extends RxState<TState> {
     }
   }
 
-  private refreshCurrentDraft(
-    listener?: PatchListener
-  ){
+  private refreshCurrentDraft(listener?: PatchListener) {
     if (!this.currentDraft) {
       return
     }
@@ -171,7 +174,7 @@ export class RxRootState<TState> extends RxState<TState> {
 
   public commitDraftChanges() {
     const newState = this.refreshCurrentDraft()
-    if(newState !== undefined){
+    if (newState !== undefined) {
       this.replaceState(newState)
     }
   }
