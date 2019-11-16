@@ -82,3 +82,18 @@ it("rollback", () => {
   expect(rxState.state.value).toEqual(1)
   expect(rxState.state.foo.bar).toEqual(initialState.foo.bar)
 })
+
+it("rollback slice", () => {
+  const rootState = new RxRootState(initialState)
+  const fooState = rootState.slice('foo')
+  rootState.updateState(draft => {
+    draft.value = 10
+  })
+  const rollback = fooState.updateStateWithRollback(draft => {
+    draft.bar = 3
+  })
+  expect(fooState.state.bar).toEqual(3)
+  rollback()
+  expect(fooState.state.bar).toEqual(initialState.foo.bar)
+  expect(rootState.state.value).toEqual(10)
+})

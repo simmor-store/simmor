@@ -48,6 +48,11 @@ export abstract class RxState<TState> {
     info?: UpdateStateInfo,
   ): void
 
+  public abstract updateStateWithRollback(
+    recipe: (draft: Draft<TState>) => void,
+    info?: UpdateStateInfo,
+  ): () => void
+
   public abstract setState(state: TState): void
 
   public slice<TKey extends keyof TState>(key: TKey): RxState<TState[TKey]> {
@@ -227,6 +232,15 @@ export class RxSliceState<
     info?: UpdateStateInfo,
   ): void {
     this.parent.updateState(() => {
+      recipe(this.draft)
+    }, info)
+  }
+
+  public updateStateWithRollback(
+    recipe: (draft: Draft<TParentState[TKey]>) => void,
+    info: UpdateStateInfo = {},
+  ) {
+    return this.parent.updateStateWithRollback(() => {
       recipe(this.draft)
     }, info)
   }
