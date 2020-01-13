@@ -6,7 +6,7 @@ import {
   Patch,
   PatchListener,
 } from "immer"
-import {BehaviorSubject, Observable} from "rxjs"
+import {BehaviorSubject, Observable, Subject} from "rxjs"
 import {filter} from "rxjs/operators"
 import {Action} from "./action"
 import {Middleware} from "./middleware"
@@ -42,6 +42,11 @@ export abstract class RxState<TState> {
   abstract get state(): TState
   abstract get draft(): Draft<TState>
   public initialState!: TState
+  public readonly onDispose$ = new Subject()
+
+  public dispose() {
+    this.onDispose$.next()
+  }
 
   public abstract updateState(
     recipe: (draft: Draft<TState>) => void,
