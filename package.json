@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/simmor-store/simmor#readme",
   "dependencies": {
-    "immer": "^4.0.0",
+    "immer": "^9.0.6",
     "rxjs": "^6.0.0"
   },
   "devDependencies": {
